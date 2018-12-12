@@ -26,15 +26,13 @@ total_budget = schools_df["budget"].sum()
 avg_math = school_data_complete["math_score"].mean()
 avg_reading = school_data_complete["reading_score"].mean()
 overall_pass_rate = (avg_math+avg_reading)/2
-print(f"Average Math score is {avg_math}")
-print(f"Average Reading score is {avg_reading}")
 
 # calculate the percentage of students with a passing math & reading score (70 or greater)
 num_passing_math = students_df.loc[students_df['math_score'] >= 70]['math_score'].count()
-perc_pass_math = (num_passing_math/num_of_students)*100
+perc_pass_math = num_passing_math/num_of_students
 
 num_passing_reading = students_df.loc[students_df['reading_score'] >= 70]['reading_score'].count()
-perc_pass_reading = (num_passing_reading/num_of_students)*100
+perc_pass_reading = num_passing_reading/num_of_students
 
 district_summary = pdk.DataFrame({
         "Total Schools" : [num_of_schools],
@@ -48,8 +46,34 @@ district_summary = pdk.DataFrame({
     }
 )
 
-# formating & styling the district summary data frame
-district_summary["Total Students"] = district_summary["Total Students"].map("{:,}".format)
-district_summary["Total Budget"] = district_summary["Total Budget"].map("${:,.2f}".format)
+# # formating & styling the district summary data frame
+# district_summary["Total Students"] = district_summary["Total Students"].map("{:,}".format)
+# district_summary["Total Budget"] = district_summary["Total Budget"].map("${:,.2f}".format)
+# district_summary["Average Math Score"] = district_summary["Average Math Score"].map("{:.2f}".format)
+# district_summary["Average Reading Score"] = district_summary["Average Reading Score"].map("{:.2f}".format)
+# district_summary["% Passing Math"] = district_summary["% Passing Math"].map("{:.2%}".format)
+# district_summary["% Passing Reading"] = district_summary["% Passing Reading"].map("{:.2%}".format)
+# district_summary["Overall Passing Rate"] = district_summary["Overall Passing Rate"].map("{:.2f}".format)
+
+# print (district_summary.head())
+
+#format cells
+district_summary.style.format({
+                        'Total Students':'{:,}',
+                        "Total Budget": "${:,.2f}", 
+                       "Average Reading Score": "{:.2f}", 
+                       "Average Math Score": "{:.2f}", 
+                       "% Passing Math": "{:.2%}", 
+                       "% Passing Reading": "{:.2%}", 
+                       "Overall Passing Rate": "{:.2f}"})
 
 print(district_summary.head())
+
+##################### CALCULATIONS FOR SCHOOL SUMMARY DATAFRAME ------------------------------------------------------
+by_school = school_data_complete.set_index("school_name").groupby(["school_name"])
+#print(by_school.head())
+
+schools_name = schools_df['school_name']
+#print(schools_name)
+schools_type = schools_df['type']
+#print(schools_type)
