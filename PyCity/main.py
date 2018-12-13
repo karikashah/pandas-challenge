@@ -161,3 +161,40 @@ reading_scores = pdk.DataFrame({
 })
 del reading_scores.index.name # to remove the index name - school name#
 print(reading_scores.head(20))
+
+###################### Scores by School Spending --------------------------------------------------------------------------------
+# create spending bins
+bins = [0, 584.999, 614.999, 644.999, 674.999]
+group_name = ['< $585', "$585 - 615", "$616 - 645", "> $645"]
+school_data_complete['spending_bins'] = pdk.cut(school_data_complete['budget']/school_data_complete['size'], bins, labels = group_name)
+
+#group by spending
+by_spending = school_data_complete.groupby('spending_bins')
+
+# calculating math & reading average & percentage. Also calculate the overall
+avg_math = by_spending['math_score'].mean()
+avg_read = by_spending['reading_score'].mean()
+stu_count = by_spending['Student ID'].count()
+pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('spending_bins')['Student ID'].count()/stu_count
+pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('spending_bins')['Student ID'].count()/stu_count
+overall = (pass_math + pass_read)/2
+
+            
+# create dataframe for scores by spending            
+scores_by_spend = pdk.DataFrame({
+    "Average Math Score": avg_math,
+    "Average Reading Score": avg_read,
+    '% Passing Math': pass_math,
+    '% Passing Reading': pass_read,
+    "Overall Passing Rate": overall
+            
+})
+scores_by_spend.index.name = "Spending Ranges (Per Student)"
+# formating & styling the school summary data frame
+scores_by_spend["Average Math Score"] = scores_by_spend["Average Math Score"].map("{:.2f}".format)
+scores_by_spend["Average Reading Score"] = scores_by_spend["Average Reading Score"].map("{:.2f}".format)
+scores_by_spend["% Passing Math"] = scores_by_spend["% Passing Math"].map("{:.6%}".format)
+scores_by_spend["% Passing Reading"] = scores_by_spend["% Passing Reading"].map("{:.6%}".format)
+scores_by_spend["Overall Passing Rate"] = scores_by_spend["Overall Passing Rate"].map("{:.6%}".format)
+
+print(scores_by_spend.head(20))
