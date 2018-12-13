@@ -120,6 +120,12 @@ school_summary["Overall Passing Rate"] = school_summary["Overall Passing Rate"].
 print(school_summary.head(20))
 
 ####################### Top Performing Schools (By Passing Rate) -----------------------------------------------------------
-# sort values by passing rate and then only print top 5 
+# sort values by passing rate and then only print top 5 schools
 top_5 = school_summary.sort_values("Overall Passing Rate", ascending = False)
 print(top_5.head(5))
+
+####################### Bottom  Performing Schools (By Passing Rate) -----------------------------------------------------------
+# sort values by passing rate and then only print worst 5 schools
+bottom_5 = top_5.tail()
+updated_bottom_5 = bottom_5.sort_values("Overall Passing Rate") #sorted based on overall passing rate in ascending order
+print(updated_bottom_5.head(5))
