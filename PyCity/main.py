@@ -49,9 +49,9 @@ district_summary["Total Students"] = district_summary["Total Students"].map("{:,
 district_summary["Total Budget"] = district_summary["Total Budget"].map("${:,.2f}".format)
 district_summary["Average Math Score"] = district_summary["Average Math Score"].map("{:.2f}".format)
 district_summary["Average Reading Score"] = district_summary["Average Reading Score"].map("{:.2f}".format)
-district_summary["% Passing Math"] = district_summary["% Passing Math"].map("{:.2%}".format)
-district_summary["% Passing Reading"] = district_summary["% Passing Reading"].map("{:.2%}".format)
-district_summary["Overall Passing Rate"] = district_summary["Overall Passing Rate"].map("{:.2%}".format)
+district_summary["% Passing Math"] = district_summary["% Passing Math"].map("{:.6%}".format)
+district_summary["% Passing Reading"] = district_summary["% Passing Reading"].map("{:.6%}".format)
+district_summary["Overall Passing Rate"] = district_summary["Overall Passing Rate"].map("{:.6%}".format)
 
 print (district_summary.head())
 
@@ -113,8 +113,13 @@ school_summary["Total School Budget"] = school_summary["Total School Budget"].ma
 school_summary["Per Student Budget"] = school_summary["Per Student Budget"].map("${:,.2f}".format)
 school_summary["Average Math Score"] = school_summary["Average Math Score"].map("{:.2f}".format)
 school_summary["Average Reading Score"] = school_summary["Average Reading Score"].map("{:.2f}".format)
-school_summary["% Passing Math"] = school_summary["% Passing Math"].map("{:.2%}".format)
-school_summary["% Passing Reading"] = school_summary["% Passing Reading"].map("{:.2%}".format)
-school_summary["Overall Passing Rate"] = school_summary["Overall Passing Rate"].map("{:.2%}".format)
+school_summary["% Passing Math"] = school_summary["% Passing Math"].map("{:.6%}".format)
+school_summary["% Passing Reading"] = school_summary["% Passing Reading"].map("{:.6%}".format)
+school_summary["Overall Passing Rate"] = school_summary["Overall Passing Rate"].map("{:.6%}".format)
 
 print(school_summary.head(20))
+
+####################### Top Performing Schools (By Passing Rate) -----------------------------------------------------------
+# sort values by passing rate and then only print top 5 
+top_5 = school_summary.sort_values("Overall Passing Rate", ascending = False)
+print(top_5.head(5))
