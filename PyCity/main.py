@@ -129,3 +129,35 @@ print(top_5.head(5))
 bottom_5 = top_5.tail()
 updated_bottom_5 = bottom_5.sort_values("Overall Passing Rate") #sorted based on overall passing rate in ascending order
 print(updated_bottom_5.head(5))
+
+###################### Math Scores by Grade --------------------------------------------------------------------------------
+#creates grade level average math scores for each school 
+ninth_math = students_df.loc[students_df['grade'] == '9th'].groupby('school_name')["math_score"].mean()
+tenth_math = students_df.loc[students_df['grade'] == '10th'].groupby('school_name')["math_score"].mean()
+eleventh_math = students_df.loc[students_df['grade'] == '11th'].groupby('school_name')["math_score"].mean()
+twelfth_math = students_df.loc[students_df['grade'] == '12th'].groupby('school_name')["math_score"].mean()
+
+math_scores = pdk.DataFrame({
+        "9th": ninth_math,
+        "10th": tenth_math,
+        "11th": eleventh_math,
+        "12th": twelfth_math
+})
+del math_scores.index.name # to remove the index name - school name#
+print(math_scores.head(20))
+
+###################### Reading Scores by Grade --------------------------------------------------------------------------------
+#creates grade level average reading scores for each school 
+ninth_math = students_df.loc[students_df['grade'] == '9th'].groupby('school_name')["reading_score"].mean()
+tenth_math = students_df.loc[students_df['grade'] == '10th'].groupby('school_name')["reading_score"].mean()
+eleventh_math = students_df.loc[students_df['grade'] == '11th'].groupby('school_name')["reading_score"].mean()
+twelfth_math = students_df.loc[students_df['grade'] == '12th'].groupby('school_name')["reading_score"].mean()
+
+reading_scores = pdk.DataFrame({
+        "9th": ninth_math,
+        "10th": tenth_math,
+        "11th": eleventh_math,
+        "12th": twelfth_math
+})
+del reading_scores.index.name # to remove the index name - school name#
+print(reading_scores.head(20))
