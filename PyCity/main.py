@@ -12,6 +12,36 @@ students_df = pdk.read_csv(students_csv)
 # Combine the data into a single dataset
 school_data_complete = pdk.merge(schools_df, students_df, how="left", on=["school_name", "school_name"])
 
+# created new function to perform repeated task of calculating math, reasing & overall score based on different groupby string
+def score_by_func(str_by_type):
+    group_by_string = school_data_complete.groupby(str_by_type)
+
+    # calculating math & reading average & percentage. Also calculate the overall
+    avg_math = group_by_string['math_score'].mean()
+    avg_read = group_by_string['reading_score'].mean()
+    stu_count = group_by_string['Student ID'].count()
+    pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby(str_by_type)['Student ID'].count()/stu_count
+    pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby(str_by_type)['Student ID'].count()/stu_count
+    overall = (pass_math + pass_read)/2
+
+    # create dataframe for scores by spending            
+    scores_by_string = pdk.DataFrame({
+        "Average Math Score": avg_math,
+        "Average Reading Score": avg_read,
+        '% Passing Math': pass_math,
+        '% Passing Reading': pass_read,
+        "Overall Passing Rate": overall
+    })
+
+    # formating & styling the school summary data frame
+    scores_by_string["Average Math Score"] = scores_by_string["Average Math Score"].map("{:.2f}".format)
+    scores_by_string["Average Reading Score"] = scores_by_string["Average Reading Score"].map("{:.2f}".format)
+    scores_by_string["% Passing Math"] = scores_by_string["% Passing Math"].map("{:.6%}".format)
+    scores_by_string["% Passing Reading"] = scores_by_string["% Passing Reading"].map("{:.6%}".format)
+    scores_by_string["Overall Passing Rate"] = scores_by_string["Overall Passing Rate"].map("{:.6%}".format)
+
+    return scores_by_string
+
 ##################### CALCULATIONS FOR DISTRICT SUMMARY DATAFRAME ------------------------------------------------------
 # calculate total # of schools
 num_of_schools = school_data_complete["school_name"].nunique()
@@ -52,20 +82,7 @@ district_summary["Average Reading Score"] = district_summary["Average Reading Sc
 district_summary["% Passing Math"] = district_summary["% Passing Math"].map("{:.6%}".format)
 district_summary["% Passing Reading"] = district_summary["% Passing Reading"].map("{:.6%}".format)
 district_summary["Overall Passing Rate"] = district_summary["Overall Passing Rate"].map("{:.6%}".format)
-
 print (district_summary.head())
-
-#format cells
-# district_summary.style.format({
-#                         'Total Students':'{:,}',
-#                         "Total Budget": "${:,.2f}", 
-#                        "Average Reading Score": "{:.2f}", 
-#                        "Average Math Score": "{:.2f}", 
-#                        "% Passing Math": "{:.2%}", 
-#                        "% Passing Reading": "{:.2%}", 
-#                        "Overall Passing Rate": "{:.2f}"})
-
-# print(district_summary.head())
 
 ##################### CALCULATIONS FOR SCHOOL SUMMARY DATAFRAME ------------------------------------------------------
 # sort the complete dataframe based on school name
@@ -78,7 +95,6 @@ schools_type = schools_df.set_index('school_name')['type']
 stu_per_sch = by_school['Student ID'].count()
 # total school budget
 sch_budget = schools_df.set_index('school_name')['budget']
-
 # per student budget
 stu_budget = schools_df.set_index('school_name')['budget']/schools_df.set_index('school_name')['size']
 
@@ -168,35 +184,10 @@ bins = [0, 585, 615, 645, 675]
 group_name = ["< $585", "$585 - 615", "$616 - 645", "> $645"]
 school_data_complete['spending_bins'] = pdk.cut(school_data_complete['budget']/school_data_complete['size'], bins, labels = group_name)
 
-#group by spending
-by_spending = school_data_complete.groupby('spending_bins')
-
-# calculating math & reading average & percentage. Also calculate the overall
-avg_math = by_spending['math_score'].mean()
-avg_read = by_spending['reading_score'].mean()
-stu_count = by_spending['Student ID'].count()
-pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('spending_bins')['Student ID'].count()/stu_count
-pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('spending_bins')['Student ID'].count()/stu_count
-overall = (pass_math + pass_read)/2
-
-            
-# create dataframe for scores by spending            
-scores_by_spend = pdk.DataFrame({
-    "Average Math Score": avg_math,
-    "Average Reading Score": avg_read,
-    '% Passing Math': pass_math,
-    '% Passing Reading': pass_read,
-    "Overall Passing Rate": overall
-            
-})
+# Calling the common function to prepare dataframe based on groupby string sent. This function returns dataframe
+# with math, reading & overall passing score based on string passed as input parameter
+scores_by_spend = score_by_func("spending_bins")
 scores_by_spend.index.name = "Spending Ranges (Per Student)"
-# formating & styling the school summary data frame
-scores_by_spend["Average Math Score"] = scores_by_spend["Average Math Score"].map("{:.2f}".format)
-scores_by_spend["Average Reading Score"] = scores_by_spend["Average Reading Score"].map("{:.2f}".format)
-scores_by_spend["% Passing Math"] = scores_by_spend["% Passing Math"].map("{:.6%}".format)
-scores_by_spend["% Passing Reading"] = scores_by_spend["% Passing Reading"].map("{:.6%}".format)
-scores_by_spend["Overall Passing Rate"] = scores_by_spend["Overall Passing Rate"].map("{:.6%}".format)
-
 print(scores_by_spend.head(20))
 
 ###################### Scores by School Size --------------------------------------------------------------------------------
@@ -205,61 +196,15 @@ size_bins = [0, 1000, 2000, 5000]
 group_name = ["Small (<1000)", "Medium (1000-2000)", "Large (2000-5000)"]
 school_data_complete['school_size_bins'] = pdk.cut(school_data_complete['size'], size_bins, labels = group_name)
 
-#group by school size
-by_size = school_data_complete.groupby('school_size_bins')
-
-# calculating math & reading average & percentage. Also calculate the overall
-avg_math = by_size['math_score'].mean()
-avg_read = by_size['reading_score'].mean()
-stu_count = by_size['Student ID'].count()
-pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('school_size_bins')['Student ID'].count()/stu_count
-pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('school_size_bins')['Student ID'].count()/stu_count
-overall = (pass_math + pass_read)/2
-
-# create dataframe for scores by spending            
-scores_by_size = pdk.DataFrame({
-    "Average Math Score": avg_math,
-    "Average Reading Score": avg_read,
-    '% Passing Math': pass_math,
-    '% Passing Reading': pass_read,
-    "Overall Passing Rate": overall
-})
+# Calling the common function to prepare dataframe based on groupby string sent. This function returns dataframe
+# with math, reading & overall passing score based on string passed as input parameter
+scores_by_size = score_by_func("school_size_bins")
 scores_by_size.index.name = "School Size"
-# formating & styling the school summary data frame
-scores_by_size["Average Math Score"] = scores_by_size["Average Math Score"].map("{:.2f}".format)
-scores_by_size["Average Reading Score"] = scores_by_size["Average Reading Score"].map("{:.2f}".format)
-scores_by_size["% Passing Math"] = scores_by_size["% Passing Math"].map("{:.6%}".format)
-scores_by_size["% Passing Reading"] = scores_by_size["% Passing Reading"].map("{:.6%}".format)
-scores_by_size["Overall Passing Rate"] = scores_by_size["Overall Passing Rate"].map("{:.6%}".format)
-
 print(scores_by_size.head(20))
 
 ###################### Scores by School Type --------------------------------------------------------------------------------
-#group by school type
-by_type = school_data_complete.groupby('type')
-
-# calculating math & reading average & percentage. Also calculate the overall
-avg_math = by_type['math_score'].mean()
-avg_read = by_type['reading_score'].mean()
-stu_count = by_type['Student ID'].count()
-pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('type')['Student ID'].count()/stu_count
-pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('type')['Student ID'].count()/stu_count
-overall = (pass_math + pass_read)/2
-
-# create dataframe for scores by spending            
-scores_by_type = pdk.DataFrame({
-    "Average Math Score": avg_math,
-    "Average Reading Score": avg_read,
-    '% Passing Math': pass_math,
-    '% Passing Reading': pass_read,
-    "Overall Passing Rate": overall
-})
+# Calling the common function to prepare dataframe based on groupby string sent. This function returns dataframe
+# with math, reading & overall passing score based on string passed as input parameter
+scores_by_type = score_by_func("type")
 scores_by_type.index.name = "Type of School"
-# formating & styling the school summary data frame
-scores_by_type["Average Math Score"] = scores_by_type["Average Math Score"].map("{:.2f}".format)
-scores_by_type["Average Reading Score"] = scores_by_type["Average Reading Score"].map("{:.2f}".format)
-scores_by_type["% Passing Math"] = scores_by_type["% Passing Math"].map("{:.6%}".format)
-scores_by_type["% Passing Reading"] = scores_by_type["% Passing Reading"].map("{:.6%}".format)
-scores_by_type["Overall Passing Rate"] = scores_by_type["Overall Passing Rate"].map("{:.6%}".format)
-
 print(scores_by_type.head(20))
