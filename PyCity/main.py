@@ -164,8 +164,8 @@ print(reading_scores.head(20))
 
 ###################### Scores by School Spending --------------------------------------------------------------------------------
 # create spending bins
-bins = [0, 584.999, 614.999, 644.999, 674.999]
-group_name = ['< $585', "$585 - 615", "$616 - 645", "> $645"]
+bins = [0, 585, 615, 645, 675]
+group_name = ["< $585", "$585 - 615", "$616 - 645", "> $645"]
 school_data_complete['spending_bins'] = pdk.cut(school_data_complete['budget']/school_data_complete['size'], bins, labels = group_name)
 
 #group by spending
@@ -198,3 +198,68 @@ scores_by_spend["% Passing Reading"] = scores_by_spend["% Passing Reading"].map(
 scores_by_spend["Overall Passing Rate"] = scores_by_spend["Overall Passing Rate"].map("{:.6%}".format)
 
 print(scores_by_spend.head(20))
+
+###################### Scores by School Size --------------------------------------------------------------------------------
+# create school size bins
+size_bins = [0, 1000, 2000, 5000]
+group_name = ["Small (<1000)", "Medium (1000-2000)", "Large (2000-5000)"]
+school_data_complete['school_size_bins'] = pdk.cut(school_data_complete['size'], size_bins, labels = group_name)
+
+#group by school size
+by_size = school_data_complete.groupby('school_size_bins')
+
+# calculating math & reading average & percentage. Also calculate the overall
+avg_math = by_size['math_score'].mean()
+avg_read = by_size['reading_score'].mean()
+stu_count = by_size['Student ID'].count()
+pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('school_size_bins')['Student ID'].count()/stu_count
+pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('school_size_bins')['Student ID'].count()/stu_count
+overall = (pass_math + pass_read)/2
+
+# create dataframe for scores by spending            
+scores_by_size = pdk.DataFrame({
+    "Average Math Score": avg_math,
+    "Average Reading Score": avg_read,
+    '% Passing Math': pass_math,
+    '% Passing Reading': pass_read,
+    "Overall Passing Rate": overall
+})
+scores_by_size.index.name = "School Size"
+# formating & styling the school summary data frame
+scores_by_size["Average Math Score"] = scores_by_size["Average Math Score"].map("{:.2f}".format)
+scores_by_size["Average Reading Score"] = scores_by_size["Average Reading Score"].map("{:.2f}".format)
+scores_by_size["% Passing Math"] = scores_by_size["% Passing Math"].map("{:.6%}".format)
+scores_by_size["% Passing Reading"] = scores_by_size["% Passing Reading"].map("{:.6%}".format)
+scores_by_size["Overall Passing Rate"] = scores_by_size["Overall Passing Rate"].map("{:.6%}".format)
+
+print(scores_by_size.head(20))
+
+###################### Scores by School Type --------------------------------------------------------------------------------
+#group by school type
+by_type = school_data_complete.groupby('type')
+
+# calculating math & reading average & percentage. Also calculate the overall
+avg_math = by_type['math_score'].mean()
+avg_read = by_type['reading_score'].mean()
+stu_count = by_type['Student ID'].count()
+pass_math = school_data_complete[school_data_complete['math_score'] >= 70].groupby('type')['Student ID'].count()/stu_count
+pass_read = school_data_complete[school_data_complete['reading_score'] >= 70].groupby('type')['Student ID'].count()/stu_count
+overall = (pass_math + pass_read)/2
+
+# create dataframe for scores by spending            
+scores_by_type = pdk.DataFrame({
+    "Average Math Score": avg_math,
+    "Average Reading Score": avg_read,
+    '% Passing Math': pass_math,
+    '% Passing Reading': pass_read,
+    "Overall Passing Rate": overall
+})
+scores_by_type.index.name = "Type of School"
+# formating & styling the school summary data frame
+scores_by_type["Average Math Score"] = scores_by_type["Average Math Score"].map("{:.2f}".format)
+scores_by_type["Average Reading Score"] = scores_by_type["Average Reading Score"].map("{:.2f}".format)
+scores_by_type["% Passing Math"] = scores_by_type["% Passing Math"].map("{:.6%}".format)
+scores_by_type["% Passing Reading"] = scores_by_type["% Passing Reading"].map("{:.6%}".format)
+scores_by_type["Overall Passing Rate"] = scores_by_type["Overall Passing Rate"].map("{:.6%}".format)
+
+print(scores_by_type.head(20))
